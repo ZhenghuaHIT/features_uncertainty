@@ -29,7 +29,7 @@ I use [Eigen](http://eigen.tuxfamily.org).
 **Experiment Procedure:** Feature point collection and distribution.    
   
 ![](http://i1.bvimg.com/641465/6c5e043ee9bbf617t.jpg)    
-![](http://i1.bvimg.com/641465/6c5e043ee9bbf617.png) 
+![](http://i2.bvimg.com/641465/6f8d5768c0317e94.png) 
 
 **Comparison and Verification:** Comparison of Scale-space-based Uncertainty Models and Conventional Models.  
   
