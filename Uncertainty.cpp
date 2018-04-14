@@ -12,6 +12,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <Eigen/Geometry>
 
 #include <ORBextractor.h>
 
@@ -50,6 +51,15 @@ int main (int argc, char** argv)
 
     vector<cv::Mat> wholeDescriptors;
     vector<vector<cv::KeyPoint>> wholeKeyPoint;
+    vector<vector<Eigen::Vector3d>> whole3dpoint;
+
+    // 相机参数
+    double cx = 321.115334372392;
+    double cy = 245.9636376792123;
+    double fx = 528.3076927865454;
+    double fy = 528.0986766452314;
+    double depthScale = 5000.0;
+
     for(int n=0;n<mnp-1;n++)
     {
         // 读取图片
@@ -97,6 +107,26 @@ int main (int argc, char** argv)
 
         vector<Point2f> pointInterest(mn);//特征点，用以画在图像中
         pointInterest.clear();
+
+        // 特征点投影到世界坐标
+        cv::Mat depth =cv::imread ( depth_files[n],-1 );
+        vector<Eigen::Vector3d> dpoint;
+        for ( int uq=0; uq<mv_KP.size(); uq++ )
+        {
+            int u = mv_KP[uq].pt.x;
+            int v = mv_KP[uq].pt.y;
+
+            unsigned int d = depth.ptr<unsigned short> (v)[u]; // 深度值
+            if ( d==0 ) continue; // 为0表示没有测量到
+            Eigen::Vector3d point;
+            point[2] = double(d)/depthScale;
+            point[0] = (u-cx)*point[2]/fx;
+            point[1] = (v-cy)*point[2]/fy;
+            dpoint.push_back(point);
+        }
+        whole3dpoint.push_back(dpoint);
+
+
 
         for(int i=0;i<mn;i++)
         {
@@ -253,7 +283,7 @@ int main (int argc, char** argv)
        {
            // 遍历点
            vector<double> xkpoi(errorxx[i].size(),0);
-           vector<double> ykpoi(errorxx[i].size(),0);
+           vector<double> ykpoi(erroryy[i].size(),0);
            for(int k=0;k<errorxx[i].size();k++)
            {
                int octave = wholeKeyPoint[0][k].octave;
@@ -285,7 +315,7 @@ int main (int argc, char** argv)
    {
        vector<double> kpmeankp;
        vector<double> ykpmeankp;
-       for(int nkp=0;nkp<xkp[0][oct].size();nkp++)
+       for(int nkp=0;nkp<ykp[0][oct].size();nkp++)
        {
            double sum = 0; double unzero = 0; double mean = 0;
            double ysum = 0; double ymean = 0;
@@ -294,13 +324,13 @@ int main (int argc, char** argv)
                sum = sum+ xkp[file][oct][nkp];
                ysum = ysum+ ykp[file][oct][nkp];
 
-               if(xkp[file][oct][nkp]!=0)
+               if(ykp[file][oct][nkp]!=0)
                {
                    unzero = unzero +1;
                }
 
            }
-           if(unzero>mnp-3)
+           if(unzero>mnp-50)
            {
                mean = sum/unzero;
                ymean = ysum/unzero;
@@ -320,28 +350,29 @@ int main (int argc, char** argv)
    cout<<"kpmean "<<kpmean.size()<<endl;
    cout<<"kpmean[] "<<kpmean[3].size()<<endl;
 
-   vector<vector<double>> kpvar;// kpmean[尺度][特征点] kpmean kpmeanoct mean
+   vector<vector<double>> kpvar;// kpvar[尺度][特征点]
    kpvar.clear();
    for(int oct=0;oct<8;oct++)
    {
        vector<double> kpvarkp;
-       for(int nkp=0;nkp<xkp[0][oct].size();nkp++)
+       for(int nkp=0;nkp<ykp[0][oct].size();nkp++)
        {
            double unzero = 0; double variance = 0;
            double rsum = 0;
            for(int file=0;file<mnp-1;file++)
            {
                //kpmean[oct][nkp]
-               if(xkp[file][oct][nkp]!=0)
+               if(ykp[file][oct][nkp]!=0)
                {
                    unzero = unzero +1;
-                   rsum = rsum + (xkp[file][oct][nkp]-kpmean[oct][nkp])*(xkp[file][oct][nkp]-kpmean[oct][nkp]);
+                   //rsum = rsum + (xkp[file][oct][nkp]-kpmean[oct][nkp])*(xkp[file][oct][nkp]-kpmean[oct][nkp]);
+                   rsum = rsum + (ykp[file][oct][nkp]-ykpmean[oct][nkp])*(ykp[file][oct][nkp]-ykpmean[oct][nkp]);
                }
            }
-           if(unzero>mnp-3)
+           if(unzero>mnp-50)
            {
                double vt = rsum/unzero;
-               if(vt<5)
+               if(vt<1.5)
                    variance = rsum/unzero;
                else
                    variance = 0;
@@ -363,17 +394,69 @@ int main (int argc, char** argv)
 //           cout<<"kpmean[][] "<<var<<"  "<<kpmean[6][var]<<endl;
 //   }
 
-   for(int var=0;var<kpvar[3].size();var++)
+   int varoct = 7; // 更改：要计算的金字塔层数
+   for(int var=0;var<kpvar[varoct].size();var++)
    {
-       if(kpvar[3][var]!=0)
-           cout<<"kpvar[][] "<<var<<"  "<<kpvar[3][var]<<endl;
+       if(kpvar[varoct][var]!=0)
+           cout<<"kpvar[][] "<<var<<"  "<<kpvar[varoct][var]<<endl;
    }
 
+   // 求平均值 众多特征点方差的mean
+   double varsum = 0;// 方差和
+   double varn = 0;
+   double varmean = 0;
+   for(int var=0;var<kpvar[varoct].size();var++)
+   {
+       if(kpvar[varoct][var]!=0)
+       {
+           varn =varn +1;
+           varsum = varsum + kpvar[varoct][var];
+       }
+       varmean = varsum/varn;
+   }
+   cout<<"kpvar mean "<<varoct<<"  "<<varmean<<endl;
+   cout<<"kpstd mean "<<varoct<<"  "<<std::sqrt(varmean)<<endl;
+
+   // 求标准差 众多特征点方差的标准差
+   double stdsum = 0;
+   double varstd = 0;
+   for(int var=0;var<kpvar[varoct].size();var++)
+   {
+       if(kpvar[varoct][var]!=0)
+       {
+           stdsum = stdsum + (kpvar[varoct][var]-varmean)*(kpvar[varoct][var]-varmean);
+       }
+       varstd = std::sqrt(stdsum/varn);
+   }
+   cout<<"kpvar std "<<varoct<<"  "<<varstd<<endl;
 
 
 
 
-
+//   ofstream out2; // xyz
+//   out2.open("/home/hou/data/3dpoint5.txt",ios::app);
+//      if (out2.is_open())
+//      {
+//        int npo = whole3dpoint[5].size();
+//        out2 <<" x "<<"\n";
+//        for(int np=0;np<npo;np++)
+//        {
+//            out2 <<whole3dpoint[5][np][0]<<"\n";
+//        }
+//        out2 <<"\n"<<"\n";
+//        out2 <<" y "<<"\n";
+//        for(int np=0;np<npo;np++)
+//        {
+//            out2 <<whole3dpoint[5][np][1]<<"\n";
+//        }
+//        out2 <<"\n"<<"\n";
+//        out2 <<" z "<<"\n";
+//        for(int np=0;np<npo;np++)
+//        {
+//            out2 <<whole3dpoint[5][np][2]<<"\n";
+//        }
+//        out2.close();
+//      }
 
 
     return 0;

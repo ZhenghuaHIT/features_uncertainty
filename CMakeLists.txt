@@ -63,3 +63,7 @@ add_executable(uncertainty
 Uncertainty.cpp)
 target_link_libraries(uncertainty ${PROJECT_NAME})
 
+add_executable(motionblur
+Motionblur.cpp)
+target_link_libraries(motionblur ${PROJECT_NAME})
+
