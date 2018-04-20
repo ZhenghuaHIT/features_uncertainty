@@ -23,7 +23,7 @@ I use [Eigen](http://eigen.tuxfamily.org).
 # 4. Result
 **Uncertainty Model Principle:** The difference between Euclidean distance and Mahalanobis distance.   
    
-![](http://i1.bvimg.com/641465/4b4f364b8fd16e3f.png)    
+![](https://github.com/ZhenghuaHIT/features_uncertainty/master/images/f1.png)    
   
 
 **Experiment Procedure:** Feature point collection and distribution.    
