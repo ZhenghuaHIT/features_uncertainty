@@ -28,26 +28,26 @@ I use [Eigen](http://eigen.tuxfamily.org).
 
 **Experiment Procedure:** Feature point collection and distribution.    
     
-![](http://i1.bvimg.com/641465/b83bd969c23c067c.jpg) 
+![](https://github.com/ZhenghuaHIT/features_uncertainty/raw/master/images/f2.png) 
 
 **Comparison and Verification:** Comparison of Scale-space-based Uncertainty Models and Conventional Models.  
   
-![](http://i1.bvimg.com/641465/61f2dc8617ea80dc.jpg)    
+![](https://github.com/ZhenghuaHIT/features_uncertainty/raw/master/images/f3.png)    
   
 
 **Scale-space-based Uncertainty Model:** Uncertainty model distribution on the same scale.    
   
-![](http://i1.bvimg.com/641465/6ca0bd92d78fd5bb.png)    
+![](https://github.com/ZhenghuaHIT/features_uncertainty/raw/master/images/f4.png)    
 
   
 **Uncertainty Model and Motion Mode:** Influence of Uncertainty Model on Different Motion Modes.  
   
-![](http://i1.bvimg.com/641465/87ff30b08f6c9ca3.png)    
+![](https://github.com/ZhenghuaHIT/features_uncertainty/raw/master/images/f5.png)    
   
 
 **Results in Public Datasets:** Experimental results on public datasets.  
   
-![](http://i1.bvimg.com/641465/807625f86ae857b3.png)    
+![](https://github.com/ZhenghuaHIT/features_uncertainty/raw/master/images/f6.png)    
 
 
 
