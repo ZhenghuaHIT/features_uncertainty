@@ -32,7 +32,7 @@ I use [Eigen](http://eigen.tuxfamily.org).
 
 **Comparison and Verification:** Comparison of Scale-space-based Uncertainty Models and Conventional Models.  
   
-![](https://github.com/ZhenghuaHIT/features_uncertainty/blob/master/images/f3.jpg)    
+![](https://github.com/ZhenghuaHIT/features_uncertainty/raw/master/images/f3.jpg)    
   
 
 **Scale-space-based Uncertainty Model:** Uncertainty model distribution on the same scale.    
